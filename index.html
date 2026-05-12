@@ -2,158 +2,21 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Accordion</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #0f0e0c;
-    --surface: #1a1916;
-    --surface2: #232220;
-    --border: rgba(255,255,255,0.08);
-    --border2: rgba(255,255,255,0.15);
-    --text: #f0ead8;
-    --muted: #7a7060;
-    --gold: #c9a84c;
-    --gold-dim: rgba(201,168,76,0.15);
-    --green: #52b788;
-    --red: #e76f51;
-    --radius: 10px;
-  }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 2rem 1rem 4rem;
-  }
-  header { text-align: center; margin-bottom: 2.5rem; }
-  h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(2rem, 6vw, 3.5rem);
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    color: var(--gold);
-    line-height: 1;
-  }
-  .subtitle { font-size: 11px; color: var(--muted); letter-spacing: 0.2em; text-transform: uppercase; margin-top: 0.5rem; }
-  .game-wrap { width: 100%; max-width: 900px; }
-  #output {
-    background: var(--surface);
-    border: 0.5px solid var(--border2);
-    border-radius: 16px;
-    padding: 1.5rem;
-    font-family: 'DM Mono', monospace;
-    font-size: 15px;
-    white-space: pre-wrap;
-    word-break: break-all;
-    min-height: 80px;
-    margin-bottom: 1.5rem;
-    line-height: 2;
-    color: var(--text);
-  }
-  .input-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
-  .cmd-input {
-    flex: 1;
-    background: var(--surface2);
-    border: 0.5px solid var(--border2);
-    border-radius: var(--radius);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    padding: 0.6rem 1rem;
-    outline: none;
-    transition: border-color 0.15s;
-  }
-  .cmd-input:focus { border-color: var(--gold); }
-  .cmd-input::placeholder { color: var(--muted); }
-  .btn {
-    background: var(--surface2);
-    border: 0.5px solid var(--border2);
-    border-radius: var(--radius);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 0.7rem 1rem;
-    cursor: pointer;
-    transition: background 0.15s, transform 0.1s;
-  }
-  .btn:hover { background: #2e2c28; }
-  .btn:active { transform: scale(0.97); }
-  .btn-gold { border-color: var(--gold); color: var(--gold); }
-  .btn-gold:hover { background: var(--gold-dim); }
-  .btn-row { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
-  .btn-row .btn { flex: 1; }
-  #log {
-    background: var(--surface);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1rem;
-    font-size: 12px;
-    color: var(--muted);
-    min-height: 48px;
-    max-height: 120px;
-    overflow-y: auto;
-    line-height: 1.8;
-    margin-bottom: 1.5rem;
-  }
-  .log-line { display: block; }
-  .log-line.good { color: var(--green); }
-  .log-line.bad  { color: var(--red); }
-  .log-line.info { color: var(--gold); }
-  .instructions {
-    background: var(--surface);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.25rem 1.5rem;
-    font-size: 11px;
-    color: var(--muted);
-    line-height: 1.9;
-  }
-  .instructions strong { color: var(--text); font-weight: 500; }
-  #status { font-size: 11px; color: var(--muted); margin-bottom: 1rem; letter-spacing: 0.05em; }
-</style>
 </head>
 <body>
 
-<header>
-  <h1>Accordion</h1>
-  <p class="subtitle">A solitaire card game</p>
-</header>
+<h1>Accordion</h1>
+<p id="status">Loading...</p>
+<pre id="output"></pre>
 
-<div class="game-wrap">
-  <p id="status">Loading…</p>
+<button onclick="send('undo')">Undo</button>
+<button onclick="send('restart')">Restart</button>
+<button onclick="send('new')">New game</button>
+<br><br>
 
-  <div id="output"></div>
-
-  <div class="btn-row">
-    <button class="btn" onclick="send('undo')">↩ Undo</button>
-    <button class="btn" onclick="send('restart')">↺ Restart</button>
-    <button class="btn btn-gold" onclick="send('new')">New game</button>
-  </div>
-
-  <div class="input-row">
-    <input class="cmd-input" id="cmd" placeholder="e.g.  leap AH  or  step 10C  or  undo" />
-    <button class="btn btn-gold" onclick="submitCmd()">Run</button>
-  </div>
-
-  <div id="log"></div>
-
-  <div class="instructions">
-    <strong>Commands</strong><br>
-    <code>leap AH</code> &nbsp;·&nbsp; <code>step 10C</code> &nbsp;·&nbsp;
-    <code>undo</code> &nbsp;·&nbsp; <code>restart</code> &nbsp;·&nbsp; <code>new</code><br><br>
-    <strong>Card format</strong><br>
-    Rank: <code>A 2–10 J Q K</code> &nbsp;·&nbsp; Suit: <code>H C D S</code><br>
-    Examples: <code>AH</code> = Ace of Hearts, <code>10C</code> = Ten of Clubs
-  </div>
-</div>
+<input id="cmd" placeholder="e.g. leap AH or step 10C" size="40" />
+<button onclick="submitCmd()">Run</button>
 
 <script>
   var Module = {
@@ -164,18 +27,8 @@
   };
 
   function send(input) {
-    if (typeof Module.ccall === 'undefined') {
-      log('Module not ready yet.', 'bad');
-      return;
-    }
-    const result = Module.ccall(
-      'processCommand',
-      'string',
-      ['string'],
-      [input]
-    );
+    const result = Module.ccall('processCommand', 'string', ['string'], [input]);
     document.getElementById('output').textContent = result;
-    log('› ' + input, 'info');
   }
 
   function submitCmd() {
@@ -185,19 +38,11 @@
     send(input);
   }
 
-  function log(msg, type) {
-    const el = document.getElementById('log');
-    const line = document.createElement('span');
-    line.className = 'log-line ' + (type || '');
-    line.textContent = msg;
-    el.appendChild(line);
-    el.scrollTop = el.scrollHeight;
-  }
-
   document.getElementById('cmd').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') submitCmd();
   });
 </script>
+
 <script src="accordion.js"></script>
 </body>
 </html>
